@@ -10,6 +10,7 @@ pinned: false
 ---
 
 Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+
 # Convertidor de PDF a Texto
 
 Aplicación web sencilla para convertir archivos PDF a texto utilizando Gradio y PyPDF2.
