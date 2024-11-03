@@ -1,26 +1,44 @@
 import gradio as gr
-from gradio_client import Client, handle_file
+import PyPDF2
 
 def generate(file, num_page):
-	path_file = file.name if not isinstance(file, str) else file
+    """
+    Extrae texto de un archivo PDF.
 
-	client = Client("k9lab/p_pdf_to_text")
-	result = client.predict(
-			file_name=handle_file(path_file),
-			num_page=num_page,
-			api_name="/predict"
-	)
-	return result
+    Args:
+        file (UploadedFile): Archivo PDF subido por el usuario.
+        num_page (int): Número de páginas a extraer.
 
+    Returns:
+        str: Texto extraído del PDF o mensaje de error.
+    """
+    num_page = int(num_page)
+    try:
+        # Crear un objeto PdfReader
+        reader = PyPDF2.PdfReader(file.name)
+        text = ""
+        # Iterar sobre el número de páginas especificado
+        for page_num in range(min(num_page, len(reader.pages))):
+            page = reader.pages[page_num]
+            # Extraer texto de cada página
+            text += page.extract_text()
+        return text if text else "No se pudo extraer texto del PDF."
+    except Exception as e:
+        # Manejar excepciones y devolver un mensaje de error
+        return f"Error al procesar el archivo: {e}"
+
+# Configurar la interfaz de Gradio
 iface = gr.Interface(
     fn=generate,
     inputs=[
         gr.File(label="Sube tu archivo PDF"),
-        gr.Number(label="Número de páginas", value=5)
+        gr.Number(label="Número de páginas", value=5, precision=0)
     ],
-	outputs=[gr.Markdown(), gr.File()],
-    title="Convertidor de PDF a texto",
-    description="Sube un archivo PDF y especifica el número de página que deseas convertir a texto."
+    outputs=gr.Textbox(),
+    title="Convertidor de PDF a Texto",
+    description="Sube un archivo PDF y especifica el número de páginas que deseas convertir a texto."
 )
 
-iface.launch()
+if __name__ == "__main__":
+    # Iniciar la aplicación
+    iface.launch()
